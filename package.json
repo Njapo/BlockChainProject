@@ -1,0 +1,22 @@
+{
+  "name": "veil",
+  "version": "0.1.0",
+  "description": "Anonymous private voting on Ethereum using zero-knowledge proofs",
+  "license": "MIT",
+  "scripts": {
+    "build:circuit": "bash scripts/build-circuit.sh",
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "node": "hardhat node",
+    "deploy": "hardhat run scripts/deploy.js --network localhost",
+    "demo": "hardhat run scripts/demo.js --network localhost"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.22.10"
+  },
+  "dependencies": {
+    "circomlibjs": "^0.1.7",
+    "snarkjs": "^0.7.4"
+  }
+}
