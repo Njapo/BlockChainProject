@@ -1,0 +1,9 @@
+# Keep shell scripts and circuit/source files LF so they run correctly on Linux/WSL.
+*.sh text eol=lf
+*.circom text eol=lf
+*.sol text eol=lf
+*.js text eol=lf
+# Treat compiled artifacts as binary.
+*.wasm binary
+*.zkey binary
+*.ptau binary
