@@ -1,6 +1,9 @@
 # Dependencies
 node_modules/
 
+# Secrets
+.env
+
 # Hardhat
 cache/
 artifacts/
@@ -16,6 +19,9 @@ build/circuit/vote_js/generate_witness.js
 # Editor / OS
 .DS_Store
 *.log
+
+# Scratch / experiments
+scratch/
 
 # Uploaded course material (NTFS alternate-data-stream artifacts from WSL)
 *.pptx

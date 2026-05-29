@@ -2,9 +2,28 @@ const { deployContracts } = require("./deploy");
 const { createIdentity } = require("../lib/identity");
 const { buildMerkleTree } = require("../lib/merkleTree");
 const { createBallot, TREE_DEPTH } = require("../lib/ballot");
+const hre = require("hardhat");
 
 const PROPOSAL_ID = 42n;
 const DESCRIPTION = "Adopt the new community treasury policy";
+
+const EXPLORERS = {
+  sepolia: "https://sepolia.etherscan.io",
+};
+
+function explorer() {
+  return EXPLORERS[hre.network.name] || null;
+}
+
+function addressLink(address) {
+  const base = explorer();
+  return base ? `\n  view          : ${base}/address/${address}` : "";
+}
+
+function txLink(hash) {
+  const base = explorer();
+  return base ? `\n  view          : ${base}/tx/${hash}` : "";
+}
 
 function short(value) {
   const s = value.toString();
@@ -26,8 +45,9 @@ async function main() {
   console.log("== Veil: anonymous private voting ==\n");
 
   const { verifier, voting } = await deployContracts();
+  const votingAddress = await voting.getAddress();
   console.log("Verifier      :", await verifier.getAddress());
-  console.log("PrivateVoting :", await voting.getAddress(), "\n");
+  console.log("PrivateVoting :", votingAddress, addressLink(votingAddress), "\n");
 
   // Eligible voters are registered off-chain; only the Merkle root is published.
   const names = ["Alice", "Bob", "Carol", "Dave", "Erin"];
@@ -56,7 +76,7 @@ async function main() {
     const ballot = await createBallot(tree, index, voter.secret, PROPOSAL_ID, option);
     const receipt = await (await submit(voting, ballot)).wait();
     console.log(`${voter.name} casts a ballot (${option === 1n ? "YES" : "NO"})`);
-    console.log(`  tx hash       : ${receipt.hash}`);
+    console.log(`  tx hash       : ${receipt.hash}${txLink(receipt.hash)}`);
     console.log(`  nullifier     : ${short(ballot.nullifierHash)}`);
     console.log(`  on-chain, observers learn the choice but not the voter\n`);
   }
