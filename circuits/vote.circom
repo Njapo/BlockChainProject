@@ -1,6 +1,7 @@
 pragma circom 2.1.6;
 
 include "../node_modules/circomlib/circuits/poseidon.circom";
+include "../node_modules/circomlib/circuits/bitify.circom";
 include "./merkle.circom";
 
 // Anonymous ballot proof.
@@ -14,8 +15,10 @@ include "./merkle.circom";
 //   root          - registered-voter Merkle root
 //   nullifierHash - Poseidon(secret, proposalId); prevents double voting
 //   proposalId    - the proposal this ballot belongs to
-//   voteOption    - 0 (no) or 1 (yes); bound to the proof so it cannot be altered
-template Vote(levels) {
+//   voteOption    - the chosen option index; range-checked to [0, 2^OPTION_BITS)
+//                   and bound to the proof so it cannot be altered. The exact
+//                   number of valid options per proposal is enforced on-chain.
+template Vote(levels, optionBits) {
     signal input root;
     signal input nullifierHash;
     signal input proposalId;
@@ -44,8 +47,12 @@ template Vote(levels) {
     nullifierHasher.inputs[1] <== proposalId;
     nullifierHash === nullifierHasher.out;
 
-    // Ballot value must be boolean; this also binds voteOption into the proof.
-    voteOption * (voteOption - 1) === 0;
+    // Ballot option must fit in optionBits bits (0 .. 2^optionBits - 1). This
+    // range-checks voteOption and binds it into the proof. The contract further
+    // restricts it to the proposal's actual option count.
+    component optionBitsCheck = Num2Bits(optionBits);
+    optionBitsCheck.in <== voteOption;
 }
 
-component main {public [root, nullifierHash, proposalId, voteOption]} = Vote(20);
+// 4 option bits => up to 16 options per proposal.
+component main {public [root, nullifierHash, proposalId, voteOption]} = Vote(20, 4);
