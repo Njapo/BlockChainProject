@@ -62,7 +62,7 @@ async function main() {
   console.log(`Registered ${voters.length} eligible voters`);
   console.log("Published Merkle root:", short(tree.root), "\n");
 
-  await (await voting.createProposal(PROPOSAL_ID, tree.root, DESCRIPTION)).wait();
+  await (await voting.createProposal(PROPOSAL_ID, tree.root, DESCRIPTION, ["No", "Yes"])).wait();
   console.log(`Proposal #${PROPOSAL_ID}: ${DESCRIPTION}\n`);
 
   // Each ballot is a ZK proof of eligibility; the voter's identity stays hidden.
@@ -90,9 +90,9 @@ async function main() {
     console.log("Alice's second ballot was rejected (nullifier already used)\n");
   }
 
-  const [yes, no] = await voting.getResults(PROPOSAL_ID);
+  const counts = await voting.getResults(PROPOSAL_ID);
   console.log("== Final tally ==");
-  console.log(`YES: ${yes}    NO: ${no}`);
+  console.log(`NO: ${counts[0]}    YES: ${counts[1]}`);
 }
 
 main()

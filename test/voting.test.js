@@ -37,16 +37,19 @@ describe("PrivateVoting", function () {
       TREE_DEPTH
     );
 
-    await voting.createProposal(proposalId, tree.root, "Increase community fund");
+    await voting.createProposal(proposalId, tree.root, "Increase community fund", [
+      "No",
+      "Yes",
+    ]);
   });
 
   it("accepts a valid anonymous ballot and updates the tally", async function () {
     const ballot = await createBallot(tree, 0, voters[0].secret, proposalId, 1n);
     await submit(voting, proposalId, ballot);
 
-    const [yes, no] = await voting.getResults(proposalId);
-    expect(yes).to.equal(1n);
-    expect(no).to.equal(0n);
+    const counts = await voting.getResults(proposalId);
+    expect(counts[1]).to.equal(1n); // option 1 (Yes)
+    expect(counts[0]).to.equal(0n); // option 0 (No)
   });
 
   it("prevents a voter from voting twice via nullifier reuse", async function () {
@@ -85,5 +88,40 @@ describe("PrivateVoting", function () {
       failed = true;
     }
     expect(failed).to.equal(true);
+  });
+
+  it("supports multiple options and tallies each separately", async function () {
+    const Verifier = await ethers.getContractFactory("Groth16Verifier");
+    const verifier = await Verifier.deploy();
+    const Voting = await ethers.getContractFactory("PrivateVoting");
+    const multi = await Voting.deploy(await verifier.getAddress());
+
+    const ev = [];
+    for (let i = 0; i < 3; i++) ev.push(await createIdentity());
+    const mtree = await buildMerkleTree(
+      ev.map((v) => v.commitment),
+      TREE_DEPTH
+    );
+    const pid = 7n;
+    await multi.createProposal(pid, mtree.root, "Pick a color", [
+      "Red",
+      "Green",
+      "Blue",
+    ]);
+
+    // votes: option 2, option 2, option 0
+    for (const [idx, opt] of [
+      [0, 2n],
+      [1, 2n],
+      [2, 0n],
+    ]) {
+      const b = await createBallot(mtree, idx, ev[idx].secret, pid, opt);
+      await submit(multi, pid, b);
+    }
+
+    const counts = await multi.getResults(pid);
+    expect(counts[0]).to.equal(1n);
+    expect(counts[1]).to.equal(0n);
+    expect(counts[2]).to.equal(2n);
   });
 });
