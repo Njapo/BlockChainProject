@@ -34,7 +34,12 @@ export async function submitEventToBlockchain({ event, onStep }) {
   );
 
   step({ type: "info", message: `Opening proposal "${event.description}"…` });
-  const tx = await voting.createProposal(event.id, tree.root, event.description);
+  const tx = await voting.createProposal(
+    event.id,
+    tree.root,
+    event.description,
+    event.options
+  );
   const receipt = await tx.wait();
   step({ type: "proposal", eventId: event.id, hash: receipt.hash });
 
@@ -63,12 +68,14 @@ export async function submitEventToBlockchain({ event, onStep }) {
       type: "ballot",
       voterName: voter.name,
       option,
+      optionLabel: event.options[option],
       hash: voteReceipt.hash,
     });
   }
 
-  const [yes, no] = await voting.getResults(event.id);
-  const result = { yes: Number(yes), no: Number(no) };
+  // Per-option tally (array of counts aligned with event.options).
+  const counts = await voting.getResults(event.id);
+  const result = counts.map((c) => Number(c));
   step({ type: "done", result, votingAddress: deployed.votingAddress });
 
   return {
