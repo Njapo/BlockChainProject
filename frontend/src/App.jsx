@@ -4,6 +4,7 @@ import EventsPanel from "./components/EventsPanel.jsx";
 import EventPage from "./components/EventPage.jsx";
 import { createIdentity } from "./lib/identity";
 import { loadEvents, saveEvents, clearEvents } from "./lib/storage";
+import { colorForIndex } from "./lib/eventTypes";
 
 export default function App() {
   const [wallet, setWallet] = React.useState({ address: "", chainId: null });
@@ -11,17 +12,19 @@ export default function App() {
   // Load any previously saved events from localStorage on first render.
   const saved = React.useMemo(() => loadEvents(), []);
 
-  // events: { id, description, voters: [{id,name,secret,commitment}],
-  //           choices: { [voterId]: 0|1 }, result?, addresses? }
+  // events: { id, description, type, options:[label], color,
+  //           voters:[{id,name,secret,commitment}], choices:{[voterId]:optIdx},
+  //           result?, addresses? }
   const [events, setEvents] = React.useState(saved ? saved.events : []);
   const [openEventId, setOpenEventId] = React.useState(null);
 
   const nextEventId = React.useRef(saved ? saved.nextEventId : 1);
   const nextVoterId = React.useRef(saved ? saved.nextVoterId : 1);
+  const colorCounter = React.useRef(saved ? saved.colorCounter || 0 : 0);
 
   // Persist events whenever they change so nothing is lost on refresh/shutdown.
   React.useEffect(() => {
-    saveEvents(events, nextEventId.current, nextVoterId.current);
+    saveEvents(events, nextEventId.current, nextVoterId.current, colorCounter.current);
   }, [events]);
 
   function resetAll() {
@@ -30,19 +33,25 @@ export default function App() {
     setEvents([]);
     nextEventId.current = 1;
     nextVoterId.current = 1;
+    colorCounter.current = 0;
     setOpenEventId(null);
   }
 
   // ---- events ----
-  // Returns an error message if rejected, or null on success.
-  function addEvent(description) {
+  // Accepts { description, type, options }. Returns an error message if
+  // rejected, or null on success.
+  function addEvent({ description, type, options }) {
     const name = description.trim();
     const exists = events.some(
       (e) => e.description.trim().toLowerCase() === name.toLowerCase()
     );
     if (exists) return "An event with this name already exists.";
     const id = BigInt(nextEventId.current++);
-    setEvents((prev) => [...prev, { id, description, voters: [], choices: {} }]);
+    const color = colorForIndex(colorCounter.current++);
+    setEvents((prev) => [
+      ...prev,
+      { id, description: name, type, options, color, voters: [], choices: {} },
+    ]);
     return null;
   }
   function removeEvent(id) {
@@ -103,10 +112,10 @@ export default function App() {
   }
 
   // ---- on-chain completion (persist result + addresses on the event) ----
-  function onComplete(eventId, { result, addresses }) {
+  function onComplete(eventId, { result, addresses, log }) {
     setEvents((prev) =>
       prev.map((e) =>
-        e.id === eventId ? { ...e, result, addresses } : e
+        e.id === eventId ? { ...e, result, addresses, log } : e
       )
     );
   }
@@ -146,7 +155,6 @@ export default function App() {
           addEvent={addEvent}
           removeEvent={removeEvent}
           openEvent={openEvent}
-          locked={false}
         />
         {events.length > 0 && (
           <button className="btn btn-ghost btn-reset" onClick={resetAll}>
