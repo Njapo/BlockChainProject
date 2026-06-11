@@ -1,5 +1,6 @@
 import React from "react";
 import { txUrl, addressUrl } from "../lib/chain";
+import { formatOptionLabel } from "../lib/eventTypes";
 
 function shortHash(h) {
   return `${h.slice(0, 10)}…${h.slice(-6)}`;
@@ -14,6 +15,9 @@ export default function SubmitPanel({
   busy,
   onSubmit,
   reason,
+  options,
+  eventType,
+  color,
 }) {
   return (
     <section className="card card-submit">
@@ -100,10 +104,34 @@ export default function SubmitPanel({
       {result && (
         <div className="results">
           <h3>Final tally</h3>
-          <div className="result-row">
-            <span className="result-yes">YES {result.yes}</span>
-            <span className="result-no">NO {result.no}</span>
-          </div>
+          {(() => {
+            const total = result.reduce((a, b) => a + b, 0) || 1;
+            const max = Math.max(...result);
+            return (options || []).map((label, i) => {
+              const count = result[i] || 0;
+              const pct = Math.round((count / total) * 100);
+              const winner = count === max && max > 0;
+              return (
+                <div key={i} className="tally-row">
+                  <div className="tally-head">
+                    <span className="tally-label">
+                      {formatOptionLabel(eventType, label)}
+                      {winner && <span className="tally-win"> ★</span>}
+                    </span>
+                    <span className="tally-count">
+                      {count} ({pct}%)
+                    </span>
+                  </div>
+                  <div className="tally-bar">
+                    <div
+                      className="tally-fill"
+                      style={{ width: `${pct}%`, background: color }}
+                    />
+                  </div>
+                </div>
+              );
+            });
+          })()}
         </div>
       )}
     </section>

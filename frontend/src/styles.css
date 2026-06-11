@@ -29,9 +29,12 @@ body {
 }
 
 .app {
-  max-width: 1100px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 24px 20px 60px;
+  padding: 24px 24px 24px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ---------- wallet bar ---------- */
@@ -163,6 +166,10 @@ body {
   flex-direction: column;
   gap: 14px;
   margin-top: 18px;
+  flex: 1;
+}
+.layout-single .card {
+  flex: 1;
 }
 @media (max-width: 880px) {
   .layout {
@@ -220,6 +227,19 @@ body {
 }
 .input:focus {
   border-color: var(--accent);
+}
+/* Native date picker: make the calendar icon visible on the dark theme. */
+.input[type="date"] {
+  color-scheme: dark;
+  cursor: pointer;
+}
+.input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.8);
+  cursor: pointer;
+  opacity: 0.9;
+}
+.input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
 }
 .form-error {
   color: var(--no);
@@ -541,4 +561,151 @@ body {
   color: var(--muted);
   font-size: 12px;
   margin-top: 30px;
+}
+
+/* ---------- event types & colors ---------- */
+.field-label {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin: 14px 0 6px;
+}
+.type-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.type-card {
+  text-align: left;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  cursor: pointer;
+  color: var(--text);
+  transition: border-color 0.15s ease, transform 0.05s ease;
+}
+.type-card:hover {
+  transform: translateY(-1px);
+}
+.type-active {
+  border-color: var(--accent);
+  background: rgba(124, 92, 255, 0.1);
+}
+.type-icon {
+  display: block;
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+.type-name {
+  display: block;
+  font-weight: 700;
+  font-size: 14px;
+}
+.type-desc {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+.fixed-options {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+.events-list {
+  margin-top: 14px;
+}
+.event-dot {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  color: white;
+  flex: none;
+  font-weight: 700;
+}
+.event-type-tag {
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--card-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px 9px;
+  white-space: nowrap;
+}
+
+/* ---------- option choices (voting) ---------- */
+.ballot-row-col {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+.option-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.btn-option {
+  background: var(--card-2);
+  border: 1px solid var(--border);
+  font-size: 13px;
+}
+.option-active {
+  font-weight: 700;
+}
+
+/* ---------- vote modal & status ---------- */
+.modal-sm {
+  width: min(420px, 92vw);
+}
+.vote-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0 4px;
+}
+.vote-option {
+  width: 100%;
+  text-align: center;
+  padding: 11px;
+}
+.voted-tag {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* ---------- tally bars ---------- */
+.tally-row {
+  margin: 10px 0;
+}
+.tally-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+.tally-win {
+  color: var(--warn);
+}
+.tally-count {
+  color: var(--muted);
+}
+.tally-bar {
+  height: 8px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.tally-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
 }

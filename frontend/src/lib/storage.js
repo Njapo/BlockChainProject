@@ -22,15 +22,15 @@ export function loadEvents() {
     if (!raw) return null;
     const parsed = JSON.parse(raw, reviver);
     if (!Array.isArray(parsed.events)) return null;
-    return parsed; // { events, nextEventId, nextVoterId }
+    return parsed; // { events, nextEventId, nextVoterId, colorCounter }
   } catch {
     return null;
   }
 }
 
-export function saveEvents(events, nextEventId, nextVoterId) {
+export function saveEvents(events, nextEventId, nextVoterId, colorCounter) {
   try {
-    const payload = { events, nextEventId, nextVoterId };
+    const payload = { events, nextEventId, nextVoterId, colorCounter };
     localStorage.setItem(KEY, JSON.stringify(payload, replacer));
   } catch {
     // storage full or unavailable; ignore (state stays in memory)
