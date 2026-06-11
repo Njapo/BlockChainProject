@@ -19,9 +19,24 @@ logic run on the EVM.
 2. the nullifier they reveal is correctly derived from that secret and the
    proposal id (one-vote-per-voter),
 
-without revealing the secret, the commitment, or which leaf they are.
+without revealing the secret, the commitment, or which leaf they are. The chosen
+option is range-checked inside the circuit and bound to the proof, so a single
+circuit supports any ballot from a simple Yes/No up to 16 named options.
 
 A full design and threat model is in [docs/WRITEUP.md](docs/WRITEUP.md).
+
+## Voting modes
+
+Each proposal carries its own fixed list of named options, so the same anonymous
+mechanism powers several kinds of events:
+
+- **Yes / No** — a simple approve or reject vote.
+- **Multiple choice** — pick one of several named candidates or proposals.
+- **Pick a date** — choose between candidate dates.
+- **Pick an amount** — choose between candidate amounts or budgets.
+
+The option a voter picks is a small public index; their identity always stays
+hidden.
 
 ## How it works
 
@@ -63,8 +78,9 @@ npm run build:circuit
 npm test
 ```
 
-Covers a valid ballot, double-vote rejection, vote-tampering rejection, and the
-impossibility of a proof for a non-registered voter.
+Covers a valid ballot, double-vote rejection, vote-tampering rejection, the
+impossibility of a proof for a non-registered voter, and a multi-option proposal
+tallied per option.
 
 ## Run the demo (live transactions)
 
@@ -90,6 +106,22 @@ You can also run it without a separate node on the in-process network:
 npx hardhat run scripts/demo.js
 ```
 
+## Web app
+
+A React frontend in `frontend/` provides the full flow in the browser: create
+events (choosing a type and its options), add named voters, cast each voter's
+anonymous ballot, then deploy the contracts and submit all ballots to Sepolia.
+Zero-knowledge proofs are generated in the browser with snarkjs, and events are
+persisted in `localStorage` so they survive refreshes and restarts.
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open the printed URL in a browser with MetaMask connected to the Sepolia testnet.
+
 ## Project layout
 
 ```
@@ -97,7 +129,7 @@ circuits/
   vote.circom        main ballot circuit (eligibility + nullifier + bound vote)
   merkle.circom      Poseidon Merkle inclusion proof
 contracts/
-  PrivateVoting.sol  proposals, nullifier tracking, tallying
+  PrivateVoting.sol  proposals, nullifier tracking, per-option tallying
   Verifier.sol       generated Groth16 verifier
 lib/
   poseidon.js        Poseidon hashing
@@ -109,6 +141,9 @@ scripts/
   build-circuit.sh   compile + trusted setup + export verifier
   deploy.js          deploy verifier + voting
   demo.js            end-to-end anonymous voting demo
+frontend/
+  src/               React app: events, voters, voting, on-chain submission
+  public/circuit/    wasm + proving key served for in-browser proving
 test/
   voting.test.js     privacy and correctness tests
 docs/
