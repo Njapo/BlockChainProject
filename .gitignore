@@ -23,6 +23,9 @@ build/circuit/vote_js/generate_witness.js
 # Scratch / experiments
 scratch/
 
+# Presentation material (local only, not part of the project)
+presentation/
+
 # Uploaded course material (NTFS alternate-data-stream artifacts from WSL)
 *.pptx
 *.pptx:*

@@ -106,6 +106,20 @@ You can also run it without a separate node on the in-process network:
 npx hardhat run scripts/demo.js
 ```
 
+## Narrated walk-through
+
+For a step-by-step story in the terminal — event created, named voters added,
+ballots cast, a double-vote attempt rejected, a non-member attempt rejected,
+final tally, and a transactions table — run:
+
+```bash
+npm run story            # local test network (free, no Etherscan links)
+npm run story:sepolia    # real Sepolia transactions, with Etherscan links
+```
+
+The Sepolia variant signs with the key in `.env`, so it needs no MetaMask
+prompts and prints a clickable Etherscan link for every transaction.
+
 ## Web app
 
 A React frontend in `frontend/` provides the full flow in the browser: create
