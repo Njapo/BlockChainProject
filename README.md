@@ -1,4 +1,4 @@
-# Veil — Anonymous Private Voting on Ethereum
+# Veil — Voting System on Ethereum
 
 Veil is a zero-knowledge voting system. Eligible voters cast ballots that anyone
 can verify as valid, while no one — not even the contract owner — can tell **who**
